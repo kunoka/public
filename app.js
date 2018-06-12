@@ -1,32 +1,29 @@
 'user strict'
 
 var Koa = require('koa')
-var sha1 = require('sha1')
+var path = require('path')
+// console.log(path)
+var wechat = require('./wechat/g')
+var util = require('./libs/util')
+var wechat_file = path.join(__dirname, './config/wechat.txt')
+var wechat = require('./wechat/g');
 var config = {
   wechat: {
-    appID: 'wxc31dac4a5b5c7f81',
-    appSecret: 'f223176eb31de0e4850025e473dcdf37',
-    token: 'grapeworldclass'
+    appID: 'wx0dfafb2a0b6b9eca',
+    appSecret: 'ea00a15c77c7fed7f9aff2800db5d420',
+    token: 'grapeworldclass',
+    getAccessToken: function () {
+      return util.readFileAsync(wechat_file)
+    },
+    saveAccessToken: function (data) {
+      data = JSON.stringify(data)
+      return util.writeFileAsync(wechat_file, data)
+    }
   }
 }
 
 var app = new Koa()
-app.use(async (ctx, next)=> {
-  console.log(ctx.query)
-  var token = config.wechat.token
-  var signature = ctx.query.signature
-  var nonce = ctx.query.nonce
-  var timestamp = ctx.query.timestamp
-  var echostr = ctx.query.echostr
-  var str = [token, timestamp, nonce].sort().join('')
-  var sha = sha1(str)
-  if(sha === signature) {
-    ctx.body = echostr + ''
-  }else{
-    ctx.body = 'wrong'
-  }
-  await next();
-})
+app.use(wechat(config.wechat))
 
 app.listen(1234)
 console.log('Listening: 1234')
