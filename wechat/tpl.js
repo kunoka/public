@@ -51,13 +51,13 @@ var tpl = heredoc(function () {/*
 */
 });
 
-console.log(tpl)
+// console.log(tpl)
 // var opts = {
 //   'async': true,
 //   'debug': true
 // }
 const compiled = ejs.compile(tpl)
-console.log(compiled)
+// console.log(compiled)
 module.exports = {
   compiled: compiled
 }

@@ -1,9 +1,11 @@
 'use strict'
-
+var config = require('./config');
+var Wechat = require('./wechat/wechat');
+var wechatApi = new Wechat(config.wechat);
 exports.reply = async function (next) {
   var message = this.weixin
-  console.log('||||| weixin.js - async function reply - message ||||||')
-  console.log(message)
+  // console.log('||||| weixin.js - async function reply - message ||||||')
+  // console.log(message)
   if (message.MsgType === 'event') {
     if (message.Event === 'subscribe') {
       if (message.EventKey) {
@@ -31,8 +33,8 @@ exports.reply = async function (next) {
     }
   }
   else if (message.MsgType === 'text') {
-    console.log('--------------- weixin.js message.MsgType ----------')
-    console.log(message.MsgType)
+    // console.log('--------------- weixin.js message.MsgType ----------')
+    // console.log(message.MsgType)
     var content = message.Content
     var reply = '额，你说的 ' + message.Content + ' 太复杂了'
 
@@ -57,6 +59,35 @@ exports.reply = async function (next) {
         picUrl: 'http://mmsns.qpic.cn/mmsns/L4qjYtOibuml238YYBcfS2FQ8JtNN69Bc4bbbscvQRrljbedVjlMEAA/0',
         url: 'http://github.com/'
       }]
+    }
+    else if (content === '5' || content === '图片' || content === 'picture') {
+      let data = await wechatApi.uploadMaterial('image', __dirname + '/view.jpg');
+      console.log('||||data|||||');
+      console.log(data)
+      reply = {
+        type: 'image',
+        mediaId: data.media_id
+      }
+    }
+    else if (content === '6' || content === '视频' || content === 'video') {
+      let data = await wechatApi.uploadMaterial('video', __dirname + '/dive.mp4');
+      console.log('||||data|||||');
+      console.log(data)
+      reply = {
+        type: 'video',
+        title: '这是测试视频',
+        description: '创建时间 ' + new Date(),
+        mediaId: data.media_id
+      }
+    }
+    else if (content === '7' || content === '音乐' || content === 'voice' || content === 'music') {
+      let data = await wechatApi.uploadMaterial('voice', __dirname + '/seve.mp3');
+      console.log('||||data|||||');
+      console.log(data)
+      reply = {
+        type: 'voice',
+        mediaId: data.media_id
+      }
     }
     this.body = reply
   }

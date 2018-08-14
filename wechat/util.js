@@ -14,7 +14,6 @@ exports.parseXMLAsync = function (xml) {
 }
 
 function formatMessage(result) {
-  debugger
   var message = {}
   if (typeof result === 'object') {
     var keys = Object.keys(result)
