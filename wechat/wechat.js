@@ -142,8 +142,8 @@ Wechat.prototype.reply = function () {
   // console.log('---------wechat.js - Wechat.prototype.reply - message')
   // console.log(message)
   var xml = util.tpl(content, message)
-  // console.log('---------wechat.js - Wechat.prototype.reply - xml')
-  // console.log(xml)
+  console.log('---------wechat.js - Wechat.prototype.reply - xml')
+  console.log(xml)
   this.status = 200
   this.type = 'application/xml'
   this.body = xml
