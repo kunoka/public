@@ -66,6 +66,7 @@ exports.reply = async function (next) {
       console.log(data)
       reply = {
         type: 'image',
+        picUrl: 'http://wx.qlogo.cn/mmopen/yQSN4CqyT9woRQhUZt2Ticq7zeDc00JmjXz5oUianMWR6SiayeGD1vOicKswwmtToPsyJZq7jlS7GU4HrxyEPh0hiaJEnQgp8dSSM/64',
         mediaId: data.media_id
       }
     }
