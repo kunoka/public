@@ -7,7 +7,7 @@ var wechat_file = path.join(__dirname, './config/wechat.txt')
 var config = {
   wechat: {
     appID: 'wxc31dac4a5b5c7f81',
-    appSecret: '3e534ec0abb4636f1136286e31613353',
+    appSecret: '1323e0769141745cc6c3b24528cfe744',
     token: 'grapeworldclass',
     getAccessToken: function () {
       return util.readFileAsync(wechat_file)
@@ -34,4 +34,4 @@ var config1 = {
     }
   }
 }
-module.exports = config
+module.exports = config1
