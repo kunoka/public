@@ -67,7 +67,9 @@ exports.reply = async function (next) {
       reply = {
         type: 'image',
         picUrl: 'http://wx.qlogo.cn/mmopen/yQSN4CqyT9woRQhUZt2Ticq7zeDc00JmjXz5oUianMWR6SiayeGD1vOicKswwmtToPsyJZq7jlS7GU4HrxyEPh0hiaJEnQgp8dSSM/64',
-        mediaId: data.media_id
+        mediaId: data.media_id,
+        msgId: '1234567890123456'
+
       }
     }
     else if (content === '6' || content === '视频' || content === 'video') {
