@@ -66,10 +66,7 @@ exports.reply = async function (next) {
       console.log(data)
       reply = {
         type: 'image',
-        picUrl: 'http://wx.qlogo.cn/mmopen/yQSN4CqyT9woRQhUZt2Ticq7zeDc00JmjXz5oUianMWR6SiayeGD1vOicKswwmtToPsyJZq7jlS7GU4HrxyEPh0hiaJEnQgp8dSSM/64',
         mediaId: data.media_id,
-        msgId: '1234567890123456'
-
       }
     }
     else if (content === '6' || content === '视频' || content === 'video') {
@@ -89,6 +86,26 @@ exports.reply = async function (next) {
       console.log(data)
       reply = {
         type: 'voice',
+        mediaId: data.media_id
+      }
+    }
+    else if (content === '8') {
+      let data = await wechatApi.uploadMaterial('image', __dirname + '/view.jpg', {type: 'image'});
+      console.log('||||data|||||');
+      console.log(data)
+      reply = {
+        type: 'image',
+        mediaId: data.media_id,
+      }
+    }
+    else if (content === '9') {
+      let data = await wechatApi.uploadMaterial('video', __dirname + '/dive.mp4', {type: 'video', description: '{"title":"Hello Vedio", "introduction":"Never think about give up"}'});
+      console.log('||||data|||||');
+      console.log(data)
+      reply = {
+        type: 'video',
+        title: '这是测试视频',
+        description: '创建时间 ' + new Date(),
         mediaId: data.media_id
       }
     }

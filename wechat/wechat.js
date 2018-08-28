@@ -2,10 +2,19 @@ var Promise = require('bluebird')
 var request = Promise.promisify(require('request'))
 var util = require('./util')
 var fs = require('fs')
+var _ = require('lodash')
 var prefix = 'https://api.weixin.qq.com/cgi-bin/'
 var api = {
   accessToken: prefix + 'token?grant_type=client_credential',
-  upload: prefix + 'media/upload?'
+  temporary: {
+    upload: prefix + 'media/upload?'
+  },
+  permanent: {
+    upload: prefix + 'material/add_material?',
+    uploadNews: prefix + 'material/add_news?',
+    uploadNewsPic: prefix + 'media/uploadimg?'
+  }
+
   // upload: prefix + 'media/upload?access_token=ACCESS_TOKEN&type=TYPE'
 }
 
@@ -73,8 +82,8 @@ Wechat.prototype.fetchAccessToken = function (data) {
 Wechat.prototype.fetchAccessToken = function () {
   let that = this;
   return new Promise(function (resolve, reject) {
-    if(that.isValidAccessToken(this)){
-        resolve(this);
+    if (that.isValidAccessToken(this)) {
+      resolve(this);
     }
     that.getAccessToken()
       .then(function (data) {
@@ -113,7 +122,6 @@ Wechat.prototype.isValidAccessToken = function (data) {
     return false
   }
 }
-
 Wechat.prototype.updateAccessToken = function () {
   var appID = this.appID
   var appSecret = this.appSecret
@@ -148,23 +156,45 @@ Wechat.prototype.reply = function () {
   this.type = 'application/xml'
   this.body = xml
 }
-Wechat.prototype.uploadMaterial = function (type, filepath) {
+Wechat.prototype.uploadMaterial = function (type, material, permanent) {
   let that = this;
+  let form = {};
+  let uploadUrl = api.temporary.upload;
+  if (permanent) {
+    uploadUrl = api.permanent.upload;
+    _.extend(form, permanent);
+  }
+  if (type === 'pic') {
+    uploadUrl = api.permanent.uploadNewsPic
+  }
+  if (type === 'news') {
+    uploadUrl = api.permanent.uploadNews
+    form = material
+  } else { // 临时和永久其他类型素材，分别有图片（image）、语音（voice）、视频（video）和缩略图（thumb）
+    form.media = fs.createReadStream(material)
+  }
   return new Promise(function (resolve, reject) {
     that.fetchAccessToken().then(function (data) {
-      let url = api.upload + 'access_token=' + data.access_token + '&type=' + type;
-      console.log('url', url);
-      let form = {
-        media: fs.createReadStream(filepath)
+      let url = uploadUrl + 'access_token=' + data.access_token;
+      if (!permanent) {
+        url += '&type=' + type;
+      } else {
+        // form.access_token = data.access_token //这行传不传都行
       }
-      request({
+
+      let options = {
         method: 'POST',
         url: url,
-        formData: form,
         json: true
-      }).then(function (response) {
+      }
+      if (type === 'news') { //如果是图文数组，传给body
+        options.body = form
+      } else {
+        options.formData = form
+      }
+
+      request(options).then(function (response) {
         let data = response.body;
-        debugger
         if (data) {
           resolve(data)
         } else {
