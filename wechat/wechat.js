@@ -193,7 +193,10 @@ Wechat.prototype.uploadMaterial = function (type, material, permanent) {
       } else {
         options.formData = form
       }
-
+      console.log('url');
+      console.log(url);
+      console.log('options');
+      console.log(options);
       request(options).then(function (response) {
         let data = response.body;
         if (data) {
