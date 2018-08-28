@@ -179,7 +179,7 @@ Wechat.prototype.uploadMaterial = function (type, material, permanent) {
       if (!permanent) {
         url += '&type=' + type;
       } else {
-        // form.access_token = data.access_token //这行传不传都行
+        form.access_token = data.access_token //这行传不传都行
       }
 
       let options = {
@@ -200,7 +200,7 @@ Wechat.prototype.uploadMaterial = function (type, material, permanent) {
         } else {
           throw new Error('upload material fail')
         }
-      }).catch(function () {
+      }).catch(function (err) {
         console.log(err)
         reject(err)
       })
