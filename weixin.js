@@ -115,7 +115,7 @@ exports.reply = async function (next) {
       console.log(data);
       let splitStr = ' / ';
       reply = '音频数量 ' + data.voice_count + splitStr + '视频数量 ' + data.vide_count + splitStr +
-        '图片数量 ' + data.image_count + splitStr + '消息数量' + split + data.news_accout;
+        '图片数量 ' + data.image_count + splitStr + '消息数量' + splitStr + data.news_accout;
       console.log(reply)
     }
     this.body = reply

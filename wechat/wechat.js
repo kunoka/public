@@ -301,7 +301,7 @@ Wechat.prototype.updateMaterial = function (mediaId, news) {
 }
 Wechat.prototype.accountMaterial = function () {
   let that = this;
-  return new Promise(function (resovle, reject) {
+  return new Promise(function (resolve, reject) {
     that.fetchAccessToken().then(function (data) {
       let url = api.permanent.account_material + data.access_token;
       let options = {
@@ -309,12 +309,13 @@ Wechat.prototype.accountMaterial = function () {
         url: url,
         json: true
       }
+      console.log(url)
       request(options).then(function (response) {
         let data = response.body;
         console.log('============');
         console.log(data);
         if (data) {
-          resovle(data);
+          resolve(data);
         } else {
           throw new Error('Account material fails')
         }
