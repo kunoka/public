@@ -14,9 +14,10 @@ var api = {
     upload: prefix + 'material/add_material?',
     uploadNews: prefix + 'material/add_news?',
     uploadNewsPic: prefix + 'media/uploadimg?',
-    fetch: prefix + 'media/get_material?',
-    del: prefix + 'media/del_material?',
-    update: prefix + 'media/update_news?'
+    fetch: prefix + 'material/get_material?',
+    del: prefix + 'material/del_material?',
+    update: prefix + 'material/update_news?',
+    account_material: prefix + 'material/get_materialcount?access_token='
   }
 
   // upload: prefix + 'media/upload?access_token=ACCESS_TOKEN&type=TYPE'
@@ -225,14 +226,13 @@ Wechat.prototype.fetchMaterial = function (mediaId, type, permanent) {
   return new Promise(function (resolve, reject) {
     that.fetchAccessToken().then(function (data) {
       let url = fetchUrl + 'access_token=' + data.access_token + '&media_id=' + mediaId;
-      if (!permanent && type==='video') {
+      if (!permanent && type === 'video') {
         url = url.replace('https://', 'http://')
       }
       resolve(url);
     })
   })
 }
-
 Wechat.prototype.delMaterial = function (mediaId) {
   let that = this;
   let form = {
@@ -265,8 +265,7 @@ Wechat.prototype.delMaterial = function (mediaId) {
     })
   })
 }
-
-Wechat.prototype.updateMaterial = function (mediaId,news) {
+Wechat.prototype.updateMaterial = function (mediaId, news) {
   let that = this;
   let form = {
     meida_id: mediaId
@@ -297,6 +296,32 @@ Wechat.prototype.updateMaterial = function (mediaId,news) {
         reject(err)
       })
 
+    })
+  })
+}
+Wechat.prototype.accountMaterial = function () {
+  let that = this;
+  return new Promise(function (resovle, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.permanent.account_material + data.access_token;
+      let options = {
+        method: 'GET',
+        url: url,
+        json: true
+      }
+      request(options).then(function (response) {
+        let data = response.body;
+        console.log('============');
+        console.log(data);
+        if (data) {
+          resovle(data);
+        } else {
+          throw new Error('Account material fails')
+        }
+      }).catch(function (err) {
+        console.log(err);
+        reject(err);
+      })
     })
   })
 }

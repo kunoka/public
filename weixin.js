@@ -109,6 +109,15 @@ exports.reply = async function (next) {
         mediaId: data.media_id
       }
     }
+    else if (content === '10') {
+      let data = await wechatApi.accountMaterial();
+      console.log('||||data|||||');
+      console.log(data);
+      let splitStr = ' / ';
+      reply = '音频数量 ' + data.voice_count + splitStr + '视频数量 ' + data.vide_count + splitStr +
+        '图片数量 ' + data.image_count + splitStr + '消息数量' + split + data.news_accout;
+      console.log(reply)
+    }
     this.body = reply
   }
   else {
