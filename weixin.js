@@ -38,9 +38,11 @@ exports.reply = async function (next) {
     var content = message.Content
     var reply = '额，你说的 ' + message.Content + ' 太复杂了'
 
+    // 1. 回复文本 - ok
     if (content === '1') {
       reply = '天下第一吃鸡'
     }
+    // 2. 定位 - 失败
     else if (content === '2') { // location
       // reply = '天下第二吃蛋'
       // this.body = reply
@@ -49,9 +51,11 @@ exports.reply = async function (next) {
       }
       this.body = reply
     }
+    // 3. 回复文本 - ok
     else if (content === '3') {
       reply = '天下第三搬砖'
     }
+    // 4. 回复图文 - ok
     else if (content === '4') {
       reply = [{
         title: '技术改变世界',
@@ -60,8 +64,10 @@ exports.reply = async function (next) {
         url: 'http://github.com/'
       }]
     }
+    // 5. 上传永久素材 - 图片
     else if (content === '5' || content === '图片' || content === 'picture') {
-      let data = await wechatApi.uploadMaterial('image', __dirname + '/view.jpg');
+      let data = await
+        wechatApi.uploadMaterial('image', __dirname + '/view.jpg');
       console.log('||||data|||||');
       console.log(data)
       reply = {
@@ -69,8 +75,10 @@ exports.reply = async function (next) {
         mediaId: data.media_id,
       }
     }
+    // 6. 上传永久素材 - 视频
     else if (content === '6' || content === '视频' || content === 'video') {
-      let data = await wechatApi.uploadMaterial('video', __dirname + '/dive.mp4');
+      let data = await
+        wechatApi.uploadMaterial('video', __dirname + '/dive.mp4');
       console.log('||||data|||||');
       console.log(data)
       reply = {
@@ -80,8 +88,10 @@ exports.reply = async function (next) {
         mediaId: data.media_id
       }
     }
+    // 7. 上传永久素材 - 音频
     else if (content === '7' || content === '音乐' || content === 'voice' || content === 'music') {
-      let data = await wechatApi.uploadMaterial('voice', __dirname + '/seve.mp3');
+      let data = await
+        wechatApi.uploadMaterial('voice', __dirname + '/seve.mp3');
       console.log('||||data|||||');
       console.log(data)
       reply = {
@@ -89,8 +99,10 @@ exports.reply = async function (next) {
         mediaId: data.media_id
       }
     }
+    // 8. 上传永久素材 - 图片
     else if (content === '8') {
-      let data = await wechatApi.uploadMaterial('image', __dirname + '/view.jpg', {type: 'image'});
+      let data = await
+        wechatApi.uploadMaterial('image', __dirname + '/view.jpg', {type: 'image'});
       console.log('||||data|||||');
       console.log(data)
       reply = {
@@ -98,8 +110,13 @@ exports.reply = async function (next) {
         mediaId: data.media_id,
       }
     }
+    // 9. 上传永久素材 - 视频
     else if (content === '9') {
-      let data = await wechatApi.uploadMaterial('video', __dirname + '/dive.mp4', {type: 'video', description: '{"title":"Hello Vedio", "introduction":"Never think about give up"}'});
+      let data = await
+        wechatApi.uploadMaterial('video', __dirname + '/dive.mp4', {
+          type: 'video',
+          description: '{"title":"Hello Vedio", "introduction":"Never think about give up"}'
+        });
       console.log('||||data|||||');
       console.log(data)
       reply = {
@@ -109,13 +126,86 @@ exports.reply = async function (next) {
         mediaId: data.media_id
       }
     }
+    // 10. 上传永久素材 - 图片 + 上传图文 + 获取素材列表
     else if (content === '10') {
-      let data = await wechatApi.accountMaterial();
-      console.log('||||data|||||');
+      var picData = await wechatApi.uploadMaterial('image', __dirname + '/view.jpg', {type: 'image'});
+      console.log('picData');
+      console.log(picData);
+      var media = {
+        "articles": [
+          {
+            "title": '永久图文素材1',
+            "thumb_media_id": picData.meida_id,
+            "author": 'Harry',
+            "digest": '永久图文1',
+            "show_cover_pic": 1,
+            "content": '这就是永久图文素材1',
+            "content_source_url": 'https://github.com'
+          },
+          {
+            "title": '永久图文素材2',
+            "thumb_media_id": picData.meida_id,
+            "author": 'Potter',
+            "digest": '永久图文2',
+            "show_cover_pic": 1,
+            "content": '这就是永久图文素材2',
+            "content_source_url": 'https://github.com'
+          }]
+      }
+      console.log('media');
+      console.log(media);
+      let data = await wechatApi.uploadMaterial('news', media, {type: 'news'});
+      console.log('---weixin.js = data ==');
       console.log(data);
-      let splitStr = ' / ';
-      reply = '音频数量 ' + data.voice_count + splitStr + '视频数量 ' + data.vide_count + splitStr +
-        '图片数量 ' + data.image_count + splitStr + '消息数量' + splitStr + data.news_accout;
+      let result = await wechatApi.fetchMaterial(data.meida_id, 'news', {});
+      console.log(result);
+      let items = result.news_item;
+      let news = [];
+      items.forEach(function (item) {
+        news.push({
+          title: item.title,
+          description: item.digest,
+          picUrl: picData.url,
+          url: item.url
+        })
+      });
+      reply = news;
+    }
+    // 11. 获取素材总数
+    else if (content === '11') {
+      let counts = await wechatApi.countMaterial();
+      console.log('||||counts|||||');
+      console.log(counts);
+
+      let results = await [
+        wechatApi.batchMaterial({
+          type: 'image',
+          offset: 0,
+          count: 10
+        }),
+        wechatApi.batchMaterial({
+          type: 'video',
+          offset: 0,
+          count: 10
+        }),
+        wechatApi.batchMaterial({
+          type: 'voice',
+          offset: 0,
+          count: 10
+        }),
+        wechatApi.batchMaterial({
+          type: 'news',
+          offset: 0,
+          count: 10
+        }),
+      ];
+      console.log('--result--');
+      console.log(JSON.stringify(results));
+      reply = '1';
+
+      // let splitStr = ' / ';
+      // reply = '音频数量 ' + data.voice_count + splitStr + '视频数量 ' + data.video_count + splitStr +
+      //   '图片数量 ' + data.image_count + splitStr + '消息数量' + splitStr + data.news_count;
       console.log(reply)
     }
     this.body = reply
@@ -123,5 +213,6 @@ exports.reply = async function (next) {
   else {
 
   }
-  await next
+  await
+    next
 }
