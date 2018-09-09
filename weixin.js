@@ -208,6 +208,31 @@ exports.reply = async function (next) {
       //   '图片数量 ' + data.image_count + splitStr + '消息数量' + splitStr + data.news_count;
       console.log(reply)
     }
+    // 13. 获取用户信息
+    else if (content === '13') {
+      // let result = await wechatApi.remarkUser(message.FromUserName, 'test');
+      // console.log('--result--');
+      // console.log(JSON.stringify(results));
+
+      let user = await wechatApi.fetchUsers(message.FromUserName, 'en');
+      console.log('user');
+      console.log(user);
+      let openIds = [
+        {
+          openid: message.FromUserName,
+          lang: 'en'
+        }
+      ];
+      let users = await wechatApi.fetchUsers(openIds);
+      console.log('users');
+      console.log(users);
+      reply = JSON.stringify(user);
+
+      // let splitStr = ' / ';
+      // reply = '音频数量 ' + data.voice_count + splitStr + '视频数量 ' + data.video_count + splitStr +
+      //   '图片数量 ' + data.image_count + splitStr + '消息数量' + splitStr + data.news_count;
+      // console.log(reply)
+    }
     this.body = reply
   }
   else {

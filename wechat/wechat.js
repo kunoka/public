@@ -19,6 +19,11 @@ var api = {
     update: prefix + 'material/update_news?',
     count: prefix + 'material/get_materialcount?access_token=',
     batch: prefix + 'material/batchget_material?access_token='
+  },
+  user: {
+    remark: prefix + 'user/info/updateremark?access_token=',
+    fetch: prefix + 'user/info?access_token=',
+    batchFetch: prefix + 'user/info/batchget?access_token='
   }
 
   // upload: prefix + 'media/upload?access_token=ACCESS_TOKEN&type=TYPE'
@@ -124,8 +129,8 @@ Wechat.prototype.reply = function () {
   // console.log('---------wechat.js - Wechat.prototype.reply - message')
   // console.log(message)
   var xml = util.tpl(content, message)
-  console.log('---------wechat.js - Wechat.prototype.reply - xml')
-  console.log(xml)
+  // console.log('---------wechat.js - Wechat.prototype.reply - xml')
+  // console.log(xml)
   this.status = 200
   this.type = 'application/xml'
   this.body = xml
@@ -196,29 +201,29 @@ Wechat.prototype.fetchMaterial = function (mediaId, type, permanent) {
         url: url,
         json: true
       }
-      if(permanent) {
+      if (permanent) {
         form.media_id = mediaId;
         form.access_token = data.access_token;
         options.body = form;
-      }else{
+      } else {
         if (type === 'video') {
           url = url.replace('https://', 'http://');
         }
         url += '&media_id=' + mediaId;
       }
-      if(type === 'news' || type === 'video') {
+      if (type === 'news' || type === 'video') {
         request(options).then(function (response) {
           let data = response.body;
-          if(data) {
+          if (data) {
             resolve(data);
-          }else{
+          } else {
             throw new Error('Fetch material fails');
           }
         }).catch(function (err) {
           console.log(err);
           reject(err);
         });
-      }else{
+      } else {
         resolve(url);
       }
     })
@@ -336,18 +341,82 @@ Wechat.prototype.batchMaterial = function (options) {
         let data = response.body;
         console.log('batchMaterial');
         console.log(data);
-        if(data) {
+        if (data) {
           resolve(data)
-        }else{
-          throw new Error('Batch material fials');
+        } else {
+          throw new Error('Batch material fails');
         }
       }).catch(function (err) {
         console.log(err);
         reject(err);
       });
-    })
+    });
+  });
+}
 
-  })
+Wechat.prototype.remarkUser = function (openId, remark) {
+  let that = this;
+  return new Promise(function (resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.user.remark + data.access_token;
+      let form = {
+        openid: openId,
+        remark: remark
+      }
+      let options = {
+        'method': 'POST',
+        'url': url,
+        'json': true
+      };
+      options.body = form;
+      request(options).then(function (response) {
+        let data = response.body;
+        if (data) {
+          resolve(data);
+        } else {
+          throw new Error('Remark user fails');
+        }
+      }).catch(function (err) {
+        console.log(err);
+        reject(err);
+      });
+    });
+  });
+}
+Wechat.prototype.fetchUsers = function (openIds, lang) {
+  let that = this;
+  lang = lang || 'zh_CN';
+  return new Promise(function (resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url;
+      let options = {
+        json: true
+      };
+      if (Array.isArray(openIds)) {
+        url = api.user.batchFetch + data.access_token;
+        options.body = {
+          user_list: openIds
+        }
+        options.method = 'POST';
+      } else {
+        url = api.user.fetch + data.access_token + '&openid=' + openIds + '&lang=' + lang;
+        options.method = 'GET';
+      }
+
+      options.url = url;
+      request(options).then(function (response) {
+        let data = response.body;
+        if (data) {
+          resolve(data);
+        } else {
+          throw new Error('Fetch Users material fails');
+        }
+      }).catch(function (err) {
+        console.log(err);
+        reject(err);
+      });
+    });
+  });
 }
 
 module.exports = Wechat
