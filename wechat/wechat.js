@@ -23,7 +23,8 @@ var api = {
   user: {
     remark: prefix + 'user/info/updateremark?access_token=',
     fetch: prefix + 'user/info?access_token=',
-    batchFetch: prefix + 'user/info/batchget?access_token='
+    batchFetch: prefix + 'user/info/batchget?access_token=',
+    list: prefix + 'user/get?access_token='
   }
 
   // upload: prefix + 'media/upload?access_token=ACCESS_TOKEN&type=TYPE'
@@ -353,7 +354,6 @@ Wechat.prototype.batchMaterial = function (options) {
     });
   });
 }
-
 Wechat.prototype.remarkUser = function (openId, remark) {
   let that = this;
   return new Promise(function (resolve, reject) {
@@ -417,6 +417,32 @@ Wechat.prototype.fetchUsers = function (openIds, lang) {
       });
     });
   });
+}
+
+Wechat.prototype.listUsers = function (openId) {
+  let that = this;
+  return new Promise(function (resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.user.list + data.access_token;
+      if(openId) {
+        url += '&next_openid=' + openId;
+      }
+      request({url: url, json: true})
+        .then(function (response) {
+          let data = response.body;
+          if(data) {
+            resolve(data);
+          }else{
+            throw new Error('List user fails');
+          }
+        })
+        .catch(function (err) {
+          console.log(err);
+          reject(err);
+        })
+    });
+  });
+
 }
 
 module.exports = Wechat

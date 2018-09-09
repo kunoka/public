@@ -233,6 +233,12 @@ exports.reply = async function (next) {
       //   '图片数量 ' + data.image_count + splitStr + '消息数量' + splitStr + data.news_count;
       // console.log(reply)
     }
+    // 14. 获取用户列表
+    else if (content === '14') {
+      let userList = await wechatApi.listUsers();
+      console.log(userList);
+      reply = userList.total;
+    }
     this.body = reply
   }
   else {
