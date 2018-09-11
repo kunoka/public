@@ -25,6 +25,7 @@ var config1 = {
     appID: 'wx0dfafb2a0b6b9eca',
     appSecret: 'ea00a15c77c7fed7f9aff2800db5d420',
     token: 'grapeworldclass',
+    openId: 'oJD4j1rQ9OFhR45BUYmv7Jta-tek',
     getAccessToken: function () {
       return util.readFileAsync(wechat_file)
     },
@@ -34,4 +35,4 @@ var config1 = {
     }
   }
 }
-module.exports = config
+module.exports = config1

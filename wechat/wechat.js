@@ -25,6 +25,10 @@ var api = {
     fetch: prefix + 'user/info?access_token=',
     batchFetch: prefix + 'user/info/batchget?access_token=',
     list: prefix + 'user/get?access_token='
+  },
+  mass: {
+    sendAll: prefix + 'message/mass/sendall?access_token=',
+    preview: prefix + 'message/mass/preview?access_token='
   }
 
   // upload: prefix + 'media/upload?access_token=ACCESS_TOKEN&type=TYPE'
@@ -265,7 +269,7 @@ Wechat.prototype.deleteMaterial = function (mediaId) {
 Wechat.prototype.updateMaterial = function (mediaId, news) {
   let that = this;
   let form = {
-    meida_id: mediaId
+    media_id: mediaId
   };
   _.extend(form, news);
   let updateUrl = api.permanent.update;
@@ -273,7 +277,6 @@ Wechat.prototype.updateMaterial = function (mediaId, news) {
   return new Promise(function (resolve, reject) {
     that.fetchAccessToken().then(function (data) {
       let url = updateUrl + 'access_token=' + data.access_token;
-
       let options = {
         method: 'POST',
         url: url,
@@ -418,21 +421,20 @@ Wechat.prototype.fetchUsers = function (openIds, lang) {
     });
   });
 }
-
 Wechat.prototype.listUsers = function (openId) {
   let that = this;
   return new Promise(function (resolve, reject) {
     that.fetchAccessToken().then(function (data) {
       let url = api.user.list + data.access_token;
-      if(openId) {
+      if (openId) {
         url += '&next_openid=' + openId;
       }
       request({url: url, json: true})
         .then(function (response) {
           let data = response.body;
-          if(data) {
+          if (data) {
             resolve(data);
-          }else{
+          } else {
             throw new Error('List user fails');
           }
         })
@@ -444,5 +446,74 @@ Wechat.prototype.listUsers = function (openId) {
   });
 
 }
-
+Wechat.prototype.sendAll = function (type, message, tagId) {
+  let that = this;
+  return new Promise(function(resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.mass.sendAll + data.access_token;
+      let options = {
+        method: 'POST',
+        url: url,
+        json: true
+      }
+      let msg = {
+        filter: {},
+        msgtype: type
+      }
+      msg[type] = message;
+      if(!tagId) {
+        msg.filter.is_to_all = true
+      }else{
+        msg.filter= {
+          is_to_all: false,
+          tag_id: tagId
+        }
+      }
+      options.body = msg;
+      console.log(options);
+      request(options).then(function (response) {
+        let data = response.body;
+        if (data) {
+          resolve(data);
+        }else{
+          throw new Error('Send all fails');
+        }
+      }).catch(function (err) {
+        console.log(err);
+        reject(err);
+      });
+    });
+  });
+}
+Wechat.prototype.preview = function (type, message, openId) {
+  let that = this;
+  return new Promise(function(resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.mass.preview + data.access_token;
+      let options = {
+        method: 'POST',
+        url: url,
+        json: true
+      }
+      let msg = {
+        touser: openId,
+        msgtype: type
+      }
+      msg[type] = message;
+      options.body = msg;
+      console.log(options);
+      request(options).then(function (response) {
+        let data = response.body;
+        if (data) {
+          resolve(data);
+        }else{
+          throw new Error('Preview fails');
+        }
+      }).catch(function (err) {
+        console.log(err);
+        reject(err);
+      });
+    });
+  });
+}
 module.exports = Wechat
