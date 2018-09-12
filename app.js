@@ -3,7 +3,7 @@
 var Koa = require('koa')
 var g = require('./wechat/g')
 var config = require('./config')
-var weixin = require('./weixin')
+var weixin = require('./wx/reply.js')
 
 var app = new Koa()
 app.use(g(config.wechat, weixin.reply))

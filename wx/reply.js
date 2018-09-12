@@ -1,42 +1,84 @@
 'use strict'
-var config = require('./config');
-var Wechat = require('./wechat/wechat');
-var wechatApi = new Wechat(config.wechat);
+let config = require('../config');
+let Wechat = require('../wechat/wechat');
+let wechatApi = new Wechat(config.wechat);
+let path = require('path');
+let menu = require('./menu');
+
+wechatApi.delete().then(function () {
+  console.log('删除成功');
+  return wechatApi.create(menu)
+}).then(function (msg) {
+  console.log('创建成功');
+  console.log(msg);
+})
 exports.reply = async function (next) {
-  var message = this.weixin
-  // console.log('||||| weixin.js - async function reply - message ||||||')
-  // console.log(message)
+  let message = this.weixin
+  console.log('||||| reply.js - async function reply - message ||||||')
+  console.log(message)
   if (message.MsgType === 'event') {
     if (message.Event === 'subscribe') {
       if (message.EventKey) {
-        console.log('扫二维码进来：' + message.EventKey + ' ' + message.ticket)
+        console.log('扫二维码进来：' + message.EventKey + ' ' + message.ticket);
       }
-
-      this.body = '哈哈，你订阅了这个号\r\n' + ' 消息ID：' + message.MsgId
+      this.body = '哈哈，你订阅了这个号\r\n' + ' 消息ID：' + message.ToUserName;
     }
     else if (message.Event === 'unsubscribe') {
-      console.log(message.FromUserName + ' 悄悄地走了...')
-      this.body = ''
+      console.log(message.FromUserName + ' 悄悄地走了...');
+      this.body = '';
     }
     else if (message.Event === 'LOCATION') {
-      this.body = '您上报的位置是：' + message.Latitude + '/' + message.Longitude + '-' + message.Precision
+      this.body = '您上报的位置是：' + message.Latitude + '/' + message.Longitude + '-' + message.Precision;
     }
     else if (message.Event === 'CLICK') {
-      this.body = '您点击了菜单：' + message.EventKey
+      this.body = '您点击了菜单：' + message.EventKey;
     }
     else if (message.Event === 'SCAN') {
-      console.log('关注后扫二维码' + message.EventKey + ' ' + mesage.Ticket)
-      this.body = '看到你扫了一下哦'
+      console.log('关注后扫二维码' + message.EventKey + ' ' + message.Ticket);
+      this.body = '看到你扫了一下哦';
     }
     else if (message.Event === 'VIEW') {
-      this.body = '您点击了菜单中的链接: ' + mesage.EventKey
+      this.body = '您点击了菜单中的链接: ' + message.EventKey;
+    }
+    else if (message.Event === 'scancode_push') {
+      // console.log(message.ScanCodeInfo.ScanType);
+      // console.log(message.ScanResult);
+      this.body = '您点击了菜单中的链接: ' + message.EventKey;
+    }
+    else if (message.Event === 'scancode_waitmsg') {
+      console.log(message.ScanCodeInfo.ScanType);
+      console.log(message.ScanResult);
+      this.body = '您点击了菜单中的链接: ' + message.EventKey;
+    }
+    else if (message.Event === 'pic_sysphoto') {
+      console.log(message.SendPicsInfo.PicList);
+      console.log(message.SendPicsInfo.Count);
+      this.body = '您点击了菜单中的链接: ' + message.EventKey
+    }
+    else if (message.Event === 'pic_photo_or_album') {
+      console.log(message.SendPicsInfo.PicList);
+      console.log(message.SendPicsInfo.Count);
+      this.body = '您点击了菜单中的链接: ' + message.EventKey
+    }
+    else if (message.Event === 'pic_weixin') {
+      console.log(message.SendPicsInfo.PicList);
+      console.log(message.SendPicsInfo.Count);
+      this.body = '您点击了菜单中的链接: ' + message.EventKey
+    }
+    else if (message.Event === 'location_select') {
+      console.log(message.SendLocationInfo.Location_X);
+      console.log(message.SendLocationInfo.Location_Y);
+      console.log(message.SendLocationInfo.Scale);
+      console.log(message.SendLocationInfo.Label);
+      console.log(message.SendLocationInfo.Poiname);
+      this.body = '您点击了菜单中的链接: ' + message.EventKey
     }
   }
   else if (message.MsgType === 'text') {
-    // console.log('--------------- weixin.js message.MsgType ----------')
+    // console.log('--------------- replay.js message.MsgType ----------')
     // console.log(message.MsgType)
-    var content = message.Content
-    var reply = '额，你说的 ' + message.Content + ' 太复杂了'
+    let content = message.Content
+    let reply = '额，你说的 ' + content + ' 太复杂了'
 
     // 1. 回复文本 - ok
     if (content === '1') {
@@ -61,7 +103,7 @@ exports.reply = async function (next) {
     // 5. 上传临时素材 - 图片 - ok
     else if (content === '5' || content === '图片' || content === 'picture') {
       let data = await
-        wechatApi.uploadMaterial('image', __dirname + '/view.jpg');
+        wechatApi.uploadMaterial('image', path.join(__dirname, '../view.jpg'));
       console.log('||||data|||||');
       console.log(data)
       reply = {
@@ -72,7 +114,7 @@ exports.reply = async function (next) {
     // 6. 上传临时素材 - 视频 - ok
     else if (content === '6' || content === '视频' || content === 'video') {
       let data = await
-        wechatApi.uploadMaterial('video', __dirname + '/dive.mp4');
+        wechatApi.uploadMaterial('video', path.join(__dirname + '../dive.mp4'));
       console.log('||||data|||||');
       console.log(data)
       reply = {
@@ -85,7 +127,7 @@ exports.reply = async function (next) {
     // 7. 上传临时素材 - 音频 - ok
     else if (content === '7' || content === '音乐' || content === 'voice' || content === 'music') {
       let data = await
-        wechatApi.uploadMaterial('voice', __dirname + '/seve.mp3');
+        wechatApi.uploadMaterial('voice', path.join(__dirname + '../seve.mp3'));
       console.log('||||data|||||');
       console.log(data)
       reply = {
@@ -96,7 +138,7 @@ exports.reply = async function (next) {
     // 8. 上传永久素材 - 图片 - ok
     else if (content === '8') {
       let data = await
-        wechatApi.uploadMaterial('image', __dirname + '/view.jpg', {type: 'image'});
+        wechatApi.uploadMaterial('image', path.join(__dirname, '../view.jpg'), {type: 'image'});
       console.log('||||data - 上传永久素材 - 图片|||||');
       console.log(data)
       reply = {
@@ -107,7 +149,7 @@ exports.reply = async function (next) {
     // 9. 上传永久素材 - 视频 - 0k
     else if (content === '9') {
       let data = await
-        wechatApi.uploadMaterial('video', __dirname + '/dive.mp4', {
+        wechatApi.uploadMaterial('video', path.join(__dirname, '../dive.mp4'), {
           type: 'video',
           description: '{"title":"Hello Vedio", "introduction":"Never think about give up"}'
         });
@@ -123,7 +165,7 @@ exports.reply = async function (next) {
     // 12. 上传永久素材 - 音频
     else if (content === '12') {
       let data = await
-        wechatApi.uploadMaterial('voice', __dirname + '/seve.mp3', {type: 'voice'});
+        wechatApi.uploadMaterial('voice', path.join(__dirname + '../seve.mp3'), {type: 'voice'});
       console.log('||||data - 上传永久素材 - 音频|||||');
       console.log(data)
       reply = {
@@ -133,7 +175,7 @@ exports.reply = async function (next) {
     }
     // 10. 上传永久素材 - 图片 + 上传图文 + 获取素材列表 - ok
     else if (content === '10') {
-      let picData = await wechatApi.uploadMaterial('image', __dirname + '/view.jpg', {type: 'image'});
+      let picData = await wechatApi.uploadMaterial('image', path.join(__dirname + '../view.jpg'), {type: 'image'});
       console.log('picData');
       console.log(picData);
       let media = {
@@ -160,7 +202,7 @@ exports.reply = async function (next) {
       console.log('media');
       console.log(media);
       let data = await wechatApi.uploadMaterial('news', media, {type: 'news'});
-      console.log('---weixin.js = data ==');
+      console.log('---replay.js = data ==');
       console.log(data);
       let result = await wechatApi.fetchMaterial(data.media_id, 'news', {});
       console.log('---result---');

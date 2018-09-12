@@ -5,10 +5,10 @@ var util = require('./util')
 
 module.exports = function(opts, handler){
   // console.log('||||| g.js-function|||||||')
-  var wechat = new Wechat(opts)
-  // console.log(wechat)
+  var wechat = new Wechat(opts);
   return async (ctx, next)=> {
     // console.log('||||| g.js-async (ctx, next)|||||||')
+    console.log(`${ctx.request.method} ${ctx.request.url}`); // 打印URL
     var token = opts.token
     var signature = ctx.query.signature
     var nonce = ctx.query.nonce
@@ -16,18 +16,16 @@ module.exports = function(opts, handler){
     var echostr = ctx.query.echostr
     var str = [token, timestamp, nonce].sort().join('')
     var sha = sha1(str)
-    // console.log('||||| g.js-async (ctx, next) - ctx.method - sha |||||||')
-    // console.log(sha)
 
     if(ctx.method === 'GET') {
       if(sha === signature) {
         ctx.body = echostr + ''
       }else{
-        ctx.body = 'get connect done - singature failure'
+        ctx.body = 'get connect done - signature failure'
       }
     }else if(ctx.method === 'POST') {
       if(sha !== signature) {
-        ctx.body = 'post connect done - singature failure'
+        ctx.body = 'post connect done - signature failure'
         return false
       }else{
         var data = await getRawBody(ctx.req, {

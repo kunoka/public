@@ -29,6 +29,11 @@ var api = {
   mass: {
     sendAll: prefix + 'message/mass/sendall?access_token=',
     preview: prefix + 'message/mass/preview?access_token='
+  },
+  menu: {
+    create: prefix + 'menu/create?access_token=',
+    get: prefix + 'menu/get?access_token=',
+    delete: prefix + 'menu/delete?access_token='
   }
 
   // upload: prefix + 'media/upload?access_token=ACCESS_TOKEN&type=TYPE'
@@ -134,8 +139,8 @@ Wechat.prototype.reply = function () {
   // console.log('---------wechat.js - Wechat.prototype.reply - message')
   // console.log(message)
   var xml = util.tpl(content, message)
-  // console.log('---------wechat.js - Wechat.prototype.reply - xml')
-  // console.log(xml)
+  console.log('---------wechat.js - Wechat.prototype.reply - xml')
+  console.log(xml)
   this.status = 200
   this.type = 'application/xml'
   this.body = xml
@@ -514,6 +519,55 @@ Wechat.prototype.preview = function (type, message, openId) {
         reject(err);
       });
     });
+  });
+}
+
+Wechat.prototype.create = function (menu) {
+  let that = this;
+  return new Promise(function (resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.menu.create + data.access_token;
+      let options = {
+        method: 'POST',
+        url: url,
+        json: true
+      }
+      options.body = menu;
+      request(options).then(function (response) {
+        let data = response.body;
+        if(data) {
+          resolve(data);
+        }else{
+          throw new Error('Create menu fails');
+        }
+      }).catch(function (err) {
+        console.log(err);
+        reject(err);
+      });
+    })
+  });
+}
+Wechat.prototype.delete = function () {
+  let that = this;
+  return new Promise(function (resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.menu.create + data.access_token;
+      let options = {
+        url: url,
+        json: true
+      }
+      request(options).then(function (response) {
+        let data = response.body;
+        if(data) {
+          resolve(data);
+        }else{
+          throw new Error('Delete menu fails');
+        }
+      }).catch(function (err) {
+        console.log(err);
+        reject(err);
+      });
+    })
   });
 }
 module.exports = Wechat
