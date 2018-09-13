@@ -331,6 +331,37 @@ exports.reply = async function (next) {
       let data5 = await wechatApi.preview('mpvideo', msg5, openId);
       reply = '预览群发' + JSON.stringify(data1) + JSON.stringify(data2) + JSON.stringify(data3) + JSON.stringify(data4) + JSON.stringify(data5);
     }
+    // 17. 二维码和长链接转短链
+    else if (content === '18') {
+      // 临时二维码请求说明
+      let tempQr = {
+        "expire_seconds": 604800,
+        "action_name": "QR_STR_SCENE",
+        "action_info": {"scene": {"scene_str": "test"}}
+      }
+      let qr1 = await wechatApi.createQrCode(tempQr);
+      // 永久二维码请求说明
+      let permQr = {
+        "action_name": "QR_LIMIT_SCENE",
+        "action_info": {"scene": {"scene_id": 123}}
+      }
+      let permstrQr = {
+        "action_name": "QR_LIMIT_SCENE",
+        "action_info": {"scene_str": {"scene_id": 'abc'}}
+      }
+      let qr2 = await wechatApi.createQrCode(permQr);
+      let qr3 = await wechatApi.createQrCode(permstrQr);
+      // 通过ticket换取二维码
+      let ticket = '';
+      let data3 = await wechatApi.showQrCode(ticket);
+    }
+    else if (content === '19') {
+      // 长链接转短链接接口
+      let longUrl = 'https://m.mysvw.com/share?bind=true&ccid=201809131417387001110&guide=true';
+      let shortData = await wechatApi.createShorturl(longUrl);
+      console.log(shortData);
+      reply = shortData.short_url;
+    }
     this.body = reply
   }
   else {

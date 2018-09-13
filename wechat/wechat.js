@@ -1,10 +1,11 @@
-var Promise = require('bluebird')
-var request = Promise.promisify(require('request'))
-var util = require('./util')
-var fs = require('fs')
-var _ = require('lodash')
-var prefix = 'https://api.weixin.qq.com/cgi-bin/'
-var api = {
+let Promise = require('bluebird')
+let request = Promise.promisify(require('request'))
+let util = require('./util')
+let fs = require('fs')
+let _ = require('lodash')
+let prefix = 'https://api.weixin.qq.com/cgi-bin/';
+let mpPrefix = 'https://mp.weixin.qq.com/cgi-bin/';
+let api = {
   accessToken: prefix + 'token?grant_type=client_credential',
   temporary: {
     upload: prefix + 'media/upload?',
@@ -34,14 +35,18 @@ var api = {
     create: prefix + 'menu/create?access_token=',
     get: prefix + 'menu/get?access_token=',
     delete: prefix + 'menu/delete?access_token='
+  },
+  qrcode: {
+    create: prefix + 'qrcode/create?access_token=',
+    show: mpPrefix + 'showqrcode?ticket=',
+    shortUrl: prefix + 'shorturl?access_token='
   }
-
   // upload: prefix + 'media/upload?access_token=ACCESS_TOKEN&type=TYPE'
 }
 
 function Wechat(opts) {
   // console.log('||||| wechat.js-function Wechat ||||||')
-  var that = this
+  let that = this
   this.appID = opts.appID
   this.appSecret = opts.appSecret
   this.getAccessToken = opts.getAccessToken
@@ -102,9 +107,9 @@ Wechat.prototype.isValidAccessToken = function (data) {
   if (!data || !data.access_token || !data.expires_in) {
     return false
   }
-  var access_token = data.acces_token
-  var expires_in = data.expires_in
-  var now = (new Date().getTime())
+  let access_token = data.acces_token
+  let expires_in = data.expires_in
+  let now = (new Date().getTime())
   if (now < expires_in) {
     return true
   }
@@ -113,9 +118,9 @@ Wechat.prototype.isValidAccessToken = function (data) {
   }
 }
 Wechat.prototype.updateAccessToken = function () {
-  var appID = this.appID
-  var appSecret = this.appSecret
-  var url = api.accessToken + '&appid=' + appID + '&secret=' + appSecret
+  let appID = this.appID
+  let appSecret = this.appSecret
+  let url = api.accessToken + '&appid=' + appID + '&secret=' + appSecret
   // console.log(url)
   return new Promise(function (resolve, reject) {
     request({
@@ -123,22 +128,22 @@ Wechat.prototype.updateAccessToken = function () {
       json: true
     }).then(function (response) {
       // console.log(response.body)
-      var data = response.body
-      var now = new Date().getTime()
-      var expires_in = now + (data.expires_in - 20) * 1000
+      let data = response.body
+      let now = new Date().getTime()
+      let expires_in = now + (data.expires_in - 20) * 1000
       data.expires_in = expires_in
       resolve(data)
     })
   })
 }
 Wechat.prototype.reply = function () {
-  var content = this.body
-  var message = this.weixin
+  let content = this.body
+  let message = this.weixin
   // console.log('---------wechat.js - Wechat.prototype.reply - content')
   // console.log(content)
   // console.log('---------wechat.js - Wechat.prototype.reply - message')
   // console.log(message)
-  var xml = util.tpl(content, message)
+  let xml = util.tpl(content, message)
   console.log('---------wechat.js - Wechat.prototype.reply - xml')
   console.log(xml)
   this.status = 200
@@ -453,7 +458,7 @@ Wechat.prototype.listUsers = function (openId) {
 }
 Wechat.prototype.sendAll = function (type, message, tagId) {
   let that = this;
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     that.fetchAccessToken().then(function (data) {
       let url = api.mass.sendAll + data.access_token;
       let options = {
@@ -466,10 +471,10 @@ Wechat.prototype.sendAll = function (type, message, tagId) {
         msgtype: type
       }
       msg[type] = message;
-      if(!tagId) {
+      if (!tagId) {
         msg.filter.is_to_all = true
-      }else{
-        msg.filter= {
+      } else {
+        msg.filter = {
           is_to_all: false,
           tag_id: tagId
         }
@@ -480,7 +485,7 @@ Wechat.prototype.sendAll = function (type, message, tagId) {
         let data = response.body;
         if (data) {
           resolve(data);
-        }else{
+        } else {
           throw new Error('Send all fails');
         }
       }).catch(function (err) {
@@ -492,7 +497,7 @@ Wechat.prototype.sendAll = function (type, message, tagId) {
 }
 Wechat.prototype.preview = function (type, message, openId) {
   let that = this;
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     that.fetchAccessToken().then(function (data) {
       let url = api.mass.preview + data.access_token;
       let options = {
@@ -511,7 +516,7 @@ Wechat.prototype.preview = function (type, message, openId) {
         let data = response.body;
         if (data) {
           resolve(data);
-        }else{
+        } else {
           throw new Error('Preview fails');
         }
       }).catch(function (err) {
@@ -521,7 +526,6 @@ Wechat.prototype.preview = function (type, message, openId) {
     });
   });
 }
-
 Wechat.prototype.create = function (menu) {
   let that = this;
   return new Promise(function (resolve, reject) {
@@ -535,9 +539,9 @@ Wechat.prototype.create = function (menu) {
       options.body = menu;
       request(options).then(function (response) {
         let data = response.body;
-        if(data) {
+        if (data) {
           resolve(data);
-        }else{
+        } else {
           throw new Error('Create menu fails');
         }
       }).catch(function (err) {
@@ -558,15 +562,73 @@ Wechat.prototype.delete = function () {
       }
       request(options).then(function (response) {
         let data = response.body;
-        if(data) {
+        if (data) {
           resolve(data);
-        }else{
+        } else {
           throw new Error('Delete menu fails');
         }
       }).catch(function (err) {
         console.log(err);
         reject(err);
       });
+    })
+  });
+}
+Wechat.prototype.createQrCode = function (qr) {
+  let that = this;
+  return new Promise(function (resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.qrcode.create + data.access_token;
+      let options = {
+        method: 'POST',
+        url: url,
+        body: qr,
+        json: true
+      }
+      request(options).then(function (response) {
+        let data = response.body;
+        if (data) {
+          resolve(data);
+        } else {
+          throw new Error('Create QR Code fails');
+        }
+      }).then(function (err) {
+        console.log(err);
+        reject(err);
+      });
+    })
+  });
+}
+Wechat.prototype.showQrCode = function (ticket) {
+ return api.qrcode.show + encodeURIComponent(ticket);
+}
+Wechat.prototype.createShorturl = function (action,longUrl) {
+  let that = this;
+  action = action || 'long2short';
+  return new Promise(function (resolve, reject) {
+    that.fetchAccessToken().then(function (data) {
+      let url = api.qrcode.shortUrl + data.access_token;
+      let options = {
+        method: 'POST',
+        url: url,
+        json: true
+      }
+      let form = {
+        action: action,
+        long_url: longUrl
+      }
+      options.body = form;
+      request(options).then(function (response) {
+        let data = response.body;
+        if (data) {
+          resolve(data);
+        } else {
+          throw new Error('Short Url fails');
+        }
+      }).catch(function (err) {
+        console.log(err);
+        reject(err);
+      })
     })
   });
 }
